@@ -11,3 +11,6 @@ main:
 
 links:
   - title: Personal links
+    children:
+      - title: Reading List 2020
+        url: https://rgorge.github.io/reading-list-2020/
