@@ -2,6 +2,7 @@
 title: "Book review: Influence without Authority by David L. Bradford; Allan R. Cohen"
 date: 2020-10-22
 comments: true
+tags: books softskills
 ---
 Every person in any organization has a need to influence people - peers, boss, other department. 
 This is just a part of human nature. We prefer to participate in reciprocity process rather than to
