@@ -6,7 +6,7 @@ comments: true
 
 ## Soft skills
 1. [~~Influence without Authority~~](https://www.amazon.com/Influence-Without-Authority-Allan-Cohen/dp/1119347718/ref=sr_1_1?crid=C6ZDFRHVLXR6&dchild=1&keywords=influence+without+authority&qid=1603385825&sprefix=influence+wi%2Caps%2C261&sr=8-1)
-2. [Speed Reading: Learn to Read a 200+ Page Book in 1 Hour](https://www.amazon.com/Speed-Reading-Learn-Read-Page-ebook/dp/B07HQM9G1R/ref=sr_1_1?dchild=1&keywords=Speed+Reading%3A+Learn+to+Read+a+200%2B+Page+Book+in+1+Hour&qid=1603386305&sr=8-1)
+2. [~~Speed Reading: Learn to Read a 200+ Page Book in 1 Hour~~](https://www.amazon.com/Speed-Reading-Learn-Read-Page-ebook/dp/B07HQM9G1R/ref=sr_1_1?dchild=1&keywords=Speed+Reading%3A+Learn+to+Read+a+200%2B+Page+Book+in+1+Hour&qid=1603386305&sr=8-1)
 3. [Technical Blogging](https://www.amazon.com/Technical-Blogging-Amplify-Your-Influence/dp/1680506471/ref=pd_lpo_14_t_0/138-4223127-2574832?_encoding=UTF8&pd_rd_i=1680506471&pd_rd_r=6bab6da4-f2d7-450d-b0c0-d81972e3ee7e&pd_rd_w=m3sRM&pd_rd_wg=wlQD1&pf_rd_p=7b36d496-f366-4631-94d3-61b87b52511b&pf_rd_r=P4358N77GD0BBARGMABS&psc=1&refRID=P4358N77GD0BBARGMABS)
 4. [New Sales. Simplified.: The Essential Handbook for Prospecting and New Business Development](https://www.amazon.com/New-Sales-Simplified-Prospecting-Development/dp/0814431771/ref=sr_1_1?dchild=1&keywords=New+Sales.+Simplified.%3A+The+Essential+Handbook+for+Prospecting+and+New+Business+Development&qid=1603386383&s=books&sr=1-1)
 5. [The Elements of Style](https://www.amazon.com/Elements-Style-Classic-Editors-Chapters/dp/1643990004/ref=sr_1_1?dchild=1&keywords=The+Elements+of+Style&qid=1603386404&s=books&sr=1-1)
