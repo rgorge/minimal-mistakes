@@ -1,11 +1,11 @@
 ---
 permalink: /virtualization-101/
-title: Cloud Native as a disruptive innovation for Telco market
+title: KVM Virtualization 101
 comments: true
 tags: article virtualization
 ---
 
-<blockquote>This is a translation of <a href="https://linkmeup.ru/blog/473.html">original article in Russian</a> that was written in September 2019. 
+<blockquote>This is a translation of <a href="https://linkmeup.ru/blog/473.html">my article in Russian</a> that was written in September 2019. 
 Translated and published with blessing from <a href="https://www.linkedin.com/in/marat-sibgatulin/">Marat Sibgatulin</a>
 </blockquote>
 <hr>
@@ -14,7 +14,7 @@ Virtualization is so deep and broad subject, that it is not possible to cover al
 
 <a href="https://fs.linkmeup.ru/images/adsm/1/1/kdpv.png" target="_blank"><img src="https://fs.linkmeup.ru/images/adsm/1/1/kdpv.png" width="800"></a>
 
-<h1>Содержание</h1>
+<h1>Content</h1>
 <ul>
     <li><b><a href="#INTRODUCTION">Overview and brief history of virtualization technology</a></b></li>
     <li><b><a href="#RESOURCES">Types of virtualized resources - compute, storage, network</a></b></li>
@@ -82,13 +82,13 @@ If you ever answered a question in RFP "Does your application support virtio?" i
 
 <a name="RESOURCES"></a>
 <h1>Types of virtualized resources - compute, storage, network</h1>
-Из чего же состоит виртуальная машина?
-Выделяют три основных вида виртуальных ресурсов:
+So, what components a VM consist of?
+Thre are three most important virtual resources:
 
 <ul>
-    <li> compute - процессор и оперативная память</li>
-    <li> storage - системный диск виртуальной машины и блочные хранилища</li>
-    <li> network - сетевые карты и устройства ввода/вывода</li>
+    <li> compute - CPU and RAM</li>
+    <li> storage - VM root disk and attached block storage devices</li>
+    <li> network - virtual network cards and other I/O devices</li>
 </ul>
 
 <hr>
@@ -97,68 +97,69 @@ If you ever answered a question in RFP "Does your application support virtio?" i
 
 
 <h2>CPU</h2>
-Теоретически QEMU способен эмулировать любой тип процессора и соотвествующие ему флаги и функциональность, на практике используют либо host-model и точечно выключают флаги перед передачей в Guest OS либо берут named-model и точечно включают\выключают флаги.
+In theory, QEMU can emulate and CPU type with any flags and functionalities, but in practice either host-model (i.e. the model of physical CPU where hypervisor is running) is used and flags are required flags are enabled before propagating them into VM or named-model (i.e. some specific CPU model, like Intel Cascade Lake, for example) is used.
 
-По умолчанию QEMU будет эмулировать процессор, который будет распознан Guest OS как QEMU Virtual CPU. Это не самый оптимальный тип процессора, особенно если приложение, работающее в виртуальной машине, использует CPU-флаги для своей работы. <a href="https://wiki.qemu.org/Features/CPUModels" target="_blank">Подробнее о разных моделях CPU в QEMU</a>.
+By default, QEMU will emulate CPU that Guest OS will recognize as QEMU Virtual CPU. It is not the most optimal CPU type for a VM, especially, when application running inside VM relies on specific CPU flags for better performance. <a href="https://wiki.qemu.org/Features/CPUModels" target="_blank">More information about CPU types in QEMU</a>.
 
-QEMU/KVM также позволяет контролировать топологию процессора, количество тредов, размер кэша, привязывать vCPU к физическому ядру и много чего еще.
+QEMU/KVM also allows to control CPU topology, quantity of threads, cache size, vCPU pinning to physical thread and many other things.
 
-Нужно ли это для виртуальной машины или нет, зависит от типа приложения, работающего в Guest OS. Например, известный факт, что для приложений, выполняющих обработку пакетов с высоким PPS, важно делать <b>CPU pinning</b>, то есть не позволять передавать физический процессор другим виртуальным машинам.
+What QEMU/KVM features are required depends on application running inside Guest OS. For example, for applications which perform packet processing with high PPS rate it is important to use <b>CPU pinning</b>. This will prevent hypervisor from allocation of physical thread to other VMs and reduce CPU steal time.
 
 <h2>Memory</h2>
-Далее на очереди оперативная память - RAM. С точки зрения Host OS запущенная с помощью QEMU/KVM виртуальная машина ничем не отличается от любого другого процесса, работающего в user-space операционной системы. Соотвественно и процесс выделения памяти виртуальной машине выполняется теми же вызовами в kernel Host OS, как если бы вы запустили, например, Chrome браузер.
+The next in line is RAM. From Host OS perspective a VM launched with QEMU/KVM does not differ from any other user-space process (if you run <b>top</b> command in Host OS CLI you will see QEMU processes). This means that memory allocation process for a VM use same Host OS kernel commands as for launching Chrome browser.
 
 <blockquote>
-Перед тем как продолжить повествование об оперативной памяти в виртуальных машинах, необходимо сделать отступление и объяснить термин <b><a href="https://ru.wikipedia.org/wiki/Non-Uniform_Memory_Access" target="_blank">NUMA</a></b> - Non-Uniform Memory Access.
-Архитектура современных физических серверов предполагает наличие двух или более процессоров (CPU) и ассоциированной с ней оперативной памятью (RAM). Такая связка процессор + память называется узел или нода (node). Связь между различными NUMA nodes осуществляется посредством специальной шины - <b>QPI</b> (QuickPath Interconnect)
-
-Выделяют локальную NUMA node - когда процесс, запущенный в операционной системе, использует процессор и оперативную память, находящуюся в одной NUMA node, и удаленную NUMA node - когда процесс, запущенный в операционной системе, использует процессор и оперативную память, находящиеся в разных NUMA nodes, то есть для взаимодействия процессора и памяти требуется передача данных через QPI шину.
+Before we can continue discussion about RAM in VMs, it is required to mention term <b><a href="https://ru.wikipedia.org/wiki/Non-Uniform_Memory_Access" target="_blank">NUMA</a></b> - Non-Uniform Memory Access.
+Modern physical servers architecture uses two or more physical CPU (sockets) and associated RAM. This combination of CPU and RAM has a name "NUMA node". Communication between NUMA nodes happens via special bus - <b>QPI</b> (QuickPath Interconnect).
+There are local NUMA node - when a process running in operating system uses CPU and RAM inside single NUMA node and remote NUMA node - when a process uses CPU and RAM belonging to different NUMA nodes, i.e. for CPU-RAM communication QPI bus is being used.
 </blockquote>
 
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/numa.png" width="600">
 
-С точки зрения виртуальной машины память ей уже выделена на момент ее запуска, однако в реальности это не так, и kernel Host OS выделяет процессу QEMU/KVM новые участки памяти по мере того как приложение в Guest OS запрашивает дополнительную память (хотя тут тоже может быть исключение, если прямо указать QEMU/KVM выделить всю память виртуальной машине непосредственно при запуске).
+From VM point of view, RAM is allocated to it at the moment of Guest OS startup, however, in reality Host OS kernel allocates memory to QEMU/KVM process piece by piece as long as Guest OS requests additional RAM (there are exceptions in this process because it is possible to command QEMU/KVM allocates full memory at the moment of VM creation).
 
-Память выделяется не байт за байтом, а определенным размером - <b>page</b>. Размер page конфигурируем и теоретически может быть любым, но на практике используется размер 4kB (по умолчанию), 2MB и 1GB. Два последних размера называются <b>HugePages</b> и часто используются для выделения памяти для memory intensive виртуальных машин. Причина использования HugePages в процессе поиска соответствия между виртуальным адресом page и физической памятью в <b>Translation Lookaside Buffer</b> (<b><a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer" target="_blank">TLB</a></b>), который в свою очередь ограничен и хранит информацию только о последних использованных pages. Если информации о нужной page в TLB нет, происходит процесс, называемый <b>TLB miss</b>, и требуется задействовать процессор Host OS для поиска ячейки физической памяти, соответствующей нужной page.
+RAM is being allocated not byte by byte but with chunks of specific size - <b>pages</b>. Page size is configurable and in theory can be anything, but in practice it is 4KB (default), 2MB and 1GB. Last two sizes have name <b>HugePages</b> and often being used for memory-intensive virtual machines. A major reason why the one should use Hugepages is <b>Translation Lookaside Buffer</b> (<b><a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer" target="_blank">TLB</a></b>) - search process that maps page virtual address with physical memory location. TLB process has its own limitations and stores information only about recently used pages. If there is no information about the page in TLB, than <b>TLB miss</b> occures and Host OS CPU should be involved to find physical memory cell that corresponds to the page.
 
-Данный процесс неэффективен и медлителен, поэтому и используется меньшее количество pages бо́льшего размера.
-QEMU/KVM также позволяет эмулировать различные NUMA-топологии для Guest OS, брать память для виртуальной машины только из определенной NUMA node Host OS и так далее. Наиболее распространенная практика - брать память для виртуальной машины из NUMA node локальной по отношению к процессорам, выделенным для виртуальной машины. Причина - желание избежать лишней нагрузки на <b>QPI</b> шину, соединяющую CPU sockets физического сервера (само собой, это логично если в вашем сервере 2 и более sockets).
+This process is slow and not efficient, that's why less pages with bigger size are used.
+
+QEMU/KVM also allows to emulate various NUMA topologies for Guest OS, allocate memory for a VM only from specific NUMA and etc. The most popular best practice is to allocate memoray for VM from local NUMA node. The reason behind it - avoid additional load on <b>QPI</b> bus that connects CPU sockets of physical server (this is applicable if your server has 2 amd more sockets). 
 
 <hr>
 
 <h1>Storage</h1>
-Как известно, оперативная память потому и называется оперативной, что ее содержимое исчезает при отключении питания или перезагрузке операционной системы. Чтобы хранить информацию, требуется постоянное запоминающее устройство (ПЗУ) или <b>persistent storage</b>.
-Существует два основных вида persistent storage:
+Persistent storage is required for VM to preserve information if VM is rebooted or shutdown.
+
+There are two main types of persistent storage:
 <ul>
-    <li> Block storage (блоковое хранилище) - блок дискового пространства, который может быть использован для установки файловой системы и создания партиций. Если грубо, то можно воспринимать это как обычный диск.</li>
-    <li> Object storage (объектное хранилище) - информация может быть сохранена только в виде объекта (файла), доступного по HTTP/HTTPS. Типичными примерами объектного хранилища являются AWS S3 или Dropbox.</li>
+    <li> Block storage - disk space that can be used for file system installation and partitioning. On the high level you can think about it as simple SSD or HDD disk.</li>
+    <li> Object storage - information is stored as file which is available via API. Typical examples of block storage sytems are AWS S3 or Dropbox.</li>
 </ul>
 
-Виртуальная машина нуждается в <b>persistent storage</b>, однако, как это сделать, если виртуальная машина "живет" в оперативной памяти Host OS? Если вкратце, то любое обращение Guest OS к контроллеру виртуального диска перехватывается QEMU/KVM и трансформируется в запись на физический диск Host OS. Этот метод неэффективен, и поэтому здесь так же как и для сетевых устройств используется virtio-драйвер вместо полной эмуляции IDE или iSCSI-устройства. Подробнее об этом можно почитать <a href="https://www.qemu.org/2018/02/09/understanding-qemu-devices/" target="_blank">здесь</a>. Таким образом виртуальная машина обращается к своему виртуальному диску через virtio-драйвер, а далее QEMU/KVM делает так, чтобы переданная информация записалась на физический диск. Важно понимать, что в Host OS дисковый backend может быть реализован в виде CEPH, NFS или iSCSI-полки.
+Vm needs <b>persistent storage</b>, but how you can achieve it if VM "lives" in memory of Host OS? In short, any call from Guest OS to virtual IDE controller intercepted by QEMU/KVM process and transformed into write operation to physiscal disk attached to Host OS. This method is not efficient from performance perspective, so virtio driver (as in virtual NIC) is used for para-virtualization of IDE or iSCSI devices. This is explained in details <a href="https://www.qemu.org/2018/02/09/understanding-qemu-devices/" target="_blank">here</a>. So, VM call its virtual disk via virtio driver, then QEMU/KVM makes sure that information is written to physical disk. The actual Host OS storage backend can be impelementd as CEPH, NFS or something else. 
 
-Наиболее простым способом эмулировать persistent storage является использование файла в какой-либо директории Host OS как дискового пространства виртуальной машины. QEMU/KVM поддерживает множество различных форматов такого рода файлов - raw, vdi, vmdk и прочие. Однако наибольшее распространение получил формат <b>qcow2</b> (QEMU copy-on-write version 2). В общем случае, qcow2 представляет собой определенным образом структурированный файл без какой-либо операционной системы. Большое количество виртуальных машин распространяется именно в виде qcow2-образов (images) и являются копией системного диска виртуальной машины, упакованной в qcow2-формат. Это имеет ряд преимуществ - qcow2-кодирование занимает гораздо меньше места, чем raw копия диска байт в байт, QEMU/KVM умеет изменять размер qcow2-файла (resizing), а значит имеется возможность изменить размер системного диска виртуальной машины, также поддерживается AES шифрование qcow2 (это имеет смысл, так как образ виртуальной машины может содержать интеллектуальную собственность).
+The easiest way to emulate persistent storage is to use file in some directory on Host OS as disk space for VM. QEMU/KVM supports multiple formats of such files - raw, vdi, vmdk and etc. However, the most popular one is <b>qcow2</b> (QEMU copy-on-write version 2). In general, qcow2 is a file with defined structure without operating system. A lot of virtual machines are distributed as qcow2 images - VM system disk snapshots packaged in qcow2 format. This approach has number of advantages - qcow2 encoding requires less space than raw snapshot, QEMU/KVM can perform resize operation of qcow2 file, i.e. that it is possible to change VM system disk size, AES encryption is supported as well.
 
-Далее, когда происходит запуск виртуальной машины, QEMU/KVM использует qcow2-файл как системный диск (процесс загрузки виртуальной машины я опускаю здесь, хотя это тоже является интересной задачей), а виртуальная машина имеет возможность считать/записать данные в qcow2-файл через virtio-драйвер. Таким образом и работает процесс снятия образов виртуальных машин, поскольку в любой момент времени qcow2-файл содержит полную копию системного диска виртуальной машины, и образ может быть использован для резервного копирования, переноса на другой хост и прочее.
+When VM is launched, QEMU/KVM uses qcow2 file as system disk (I intentionally omit VM boot process here) and VM is able to perform read/write operations into qcow2 file via virtio driver. Snapshot creation process works in the same way - qcow2-file represents full copy of VM system disk and by used for backup purposes, evacuation to another hypervisor and etc.
 
-В общем случае этот qcow2-файл будет определяться в Guest OS как <i>/dev/vda</i>-устройство, и Guest OS произведет разбиение дискового пространства на партиции и установку файловой системы. Аналогично, следующие qcow2-файлы, подключенные QEMU/KVM как <i>/dev/vdX</i> устройства, могут быть использованы как <b>block storage</b> в виртуальной машине для хранения информации (именно так и работает компонент Openstack Cinder).
+By default, this qcow2 file will be detected in Guest OS as <i>/dev/vda</i> device, Guest OS will perform partitioning and file system installation. Additional qcow2-files attached by QEMU/KVM <i>/dev/vdX</i> devices can be used as <b>block storage</b> in VM (this is exactly how Openstack Cinder works, for example).
+
 <hr>
 
 <h1>Network</h1>
-Последним в нашем списке виртуальных ресурсов идут сетевые карты и устройства ввода/вывода. Виртуальная машина, как и физический хост, нуждается в <b>PCI/PCIe-шине</b> для подключения устройств ввода/вывода. QEMU/KVM способен эмулировать разные типы чипсетов - q35 или i440fx (первый поддерживает - PCIe, второй - legacy PCI ), а также различные PCI-топологии, например, создавать отдельные PCI-шины (PCI expander bus) для NUMA nodes Guest OS.
+The last but not least there are virutal NIC cards and other I/O devices. Virtual Machine requies a <b>PCI/PCIe-bus</b> for i/O devices connection. QEMU/KVM can emulate different types of chipsets - q35 or i440fx (the first one supports - PCIe, the second - legacy PCI ) and multiple PCI topologies, for example, create separate PCI expander buses for NUMA nodes emulation for a Guest OS.
 
-После создания PCI/PCIe шины необходимо подключить к ней устройство ввода/вывода. В общем случае это может быть что угодно - от сетевой карты до физического GPU. И, конечно же, сетевая карта, как полностью виртуализированная (полностью виртуализированный интерфейс e1000, например), так и пара-виртуализированная (virtio, например) или физическая NIC. Последняя опция используется для data-plane виртуальных машин, где требуется получить line-rate скорости передачи пакетов - маршрутизаторов, файрволов и тд.
+After PCI/PCIe is created, I/O device should be connected to it. In general, it can be anything from network card to physical GPU. NIC can be fully-virtualized (for example, e1000 interface) or para-virtualized (for, example virtio) or a physical NIC. The last option is applicable for network-intensive applications where line rate PPS rate is required - routers, firewalls and etc.
 
-Здесь существует два основных подхода - <b>PCI passthrough</b> и <b>SR-IOV</b>. Основное отличие между ними - для PCI-PT используется драйвер только внутри Guest OS, а для SRIOV  используется драйвер Host OS (для создания <b>VF - Virtual Functions</b>) и драйвер Guest OS для управления SR-IOV VF. Более подробно об PCI-PT и SRIOV отлично <a href="https://www.juniper.net/documentation/en_US/vsrx/topics/concept/security-vsrx-kvm-sr-iov.html" target="_blank">написал Juniper</a>.
+There are two major approaches for this task - <b>PCI passthrough</b> and <b>SR-IOV</b>. The main difference between them is that with PCI-PT only Guest OS driver is used for NIC, while for SRIOV Host OS driver is required to create and maintain SRIOV Virtual Functions. More details about PCI-PT and SRIOV can be found  <a href="https://www.juniper.net/documentation/en_US/vsrx/topics/concept/security-vsrx-kvm-sr-iov.html" target="_blank">in Juniper article</a>
 
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/sriov.png" width="600">
 
 <blockquote>
-Для уточнения стоит отметить что, PCI passthrough  и SR-IOV  это дополняющие друг друга технологии. SR-IOV это нарезка физической функции на виртуальные функции. Это выполняется на уровне Host OS. При этом Host OS видит виртуальные функции как еще одно PCI/PCIe устройство. Что он дальше с ними делает - не важно.
-
-А PCI-PT это механизм проброса любого Host OS PCI устройства в Guest OS, в том числе виртуальной функции, созданной SR-IOV устройством
+It should be mentioned that PCI-PT and SRIOV are complimentary technologies. SRIOV creates Virtual Functions. This is done in Host OS layer and Host OS sees VF as one more PCI/PCIe device.
+PCI-PT is a propagation mechanism of PCIe device into the VM. It doesnt matter what Guest OS will do with propagated device.
 </blockquote>
 
-Таким образом мы рассмотрели основные виды виртуальных ресурсов и следующим шагом необходимо понять как виртуальная машина общается с внешним миром через сеть.
+So, we discussed main virtual resources types and now it is necessary to understand how VM communicates with outside world via netwrok.
 <hr>
 
 <a name="SWITCHING"></a>
