@@ -5,7 +5,7 @@ comments: true
 tags: article virtualization
 ---
 
-<blockquote>This is a translation of <a href="https://linkmeup.ru/blog/473.html">my article in Russian</a> that was written in September 2019. 
+<blockquote>This is a translation of <a href="https://linkmeup.ru/blog/473.html">my article in Russian</a> that was written by me in September 2019. 
 Translated and published with blessing from <a href="https://www.linkedin.com/in/marat-sibgatulin/">Marat Sibgatulin</a>
 </blockquote>
 <hr>
@@ -42,7 +42,6 @@ On the Opensource side two main projects brought virtualization to Linux:
 In reality all functionallity available in KVM has been ported to QEMU, but it is not important as far as most part of Linux users do not use QEMU/KVM directly but through at least one layer of abstraction that we will discuss later.
 </blockquote>
 
-Сегодня VMWare ESXi и Linux QEMU/KVM это два основных гипервизора, которые доминируют на рынке. Они же являются представителями двух разных типов гипервизоров:
 As of today, VMWare ESXi and Linux QEMU/KVM are two most famous hypervisors on the on-premise virtualization market. They are representatives of the same hypervisor type, however, there are two of them:
 <ul>
     <li>Type 1 - hypervisor is running on bare-metal hardware. Such hypervisors are VMWare ESXi, Linux KVM, Hyper-V</li>
@@ -59,7 +58,7 @@ One of the most important and widely used technology is Intel VT (Virtualization
 
 Two most famous of these expansions are VT-x и VT-d. First one is used for CPU performance improvements in virtualization environment because it provides hardware acceleration for some functions (with VT-x 99.9% of Guest OS functions are exectured in physical CPU and emulation is done only when it is required). Second one is needed for attaching physical devices to Virtual Machine (to use SRIOV VF VT-d <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/virtualization_host_configuration_and_guest_installation_guide/sect-virtualization_host_configuration_and_guest_installation_guide-sr_iov-how_sr_iov_libvirt_works">should be enabled</a> )
 
-Next important concept is difference between full virtualization and para-virtualization.
+Next important concept is difference between full-virtualization and para-virtualization.
 Full virtualization is good, it allows to run any code on any CPU, however, it is very not efficient and cannot be used for high-load systems.
 Para-virtualization, in short, it is when Guest OS is aware that it runs in virtualized environment and cooperates with hypervisor to achieve better performance. I.e. Guest OS - hypervisor interface appears.
 
@@ -165,34 +164,35 @@ So, we discussed main virtual resources types and now it is necessary to underst
 <a name="SWITCHING"></a>
 <h1>Virtual switching</h1>
 
-Если есть виртуальная машина, а в ней есть виртуальный интерфейс, то, очевидно, возникает задача передачи пакета из одной VM в другую. В Linux-based гипервизорах (KVM, например) эта задача может решаться с помощью Linux bridge, однако, большое распространение получил проект <a href="https://www.openvswitch.org" target="_blank">Open vSwitch</a> (OVS).
-Есть несколько основных функциональностей, которые позволили OVS широко распространиться и стать de-facto основным методом коммутации пакетов, который используется во многих платформах облачных вычислений(например, Openstack) и виртуализированных решениях.
-<ul>
-    <li> Передача сетевого состояния - при миграции VM между гипервизорами возникает задача передачи ACL, QoSs, L2/L3 forwarding-таблиц и прочего. И OVS умеет это.</li>
-    <li> Реализация механизма передачи пакетов (datapath) как в kernel, так и в user-space</li>
-    <li> CUPS (Control/User-plane separation) архитектура - позволяет перенести функциональность обработки пакетов на специализированный chipset (Broadcom и Marvell chipset, например, могут такое), управляя им через control-plane OVS.</li>
-    <li> Поддержка методов удаленного управления трафиком - протокол OpenFlow (привет, SDN).</li>
-</ul>
+We have now Virtual Machine with virtual NIC, so now we have a task to send packets from VM to another or from VM to outside world. In KVM hypervisor this task can be done with Linux bridge, however, we are going to discuss another famous technology - <a href="https://www.openvswitch.org" target="_blank">Open vSwitch</a> (OVS).
 
-Архитектура OVS на первый взгляд выглядит довольно страшно, но это только на первый взгляд.
+There are several features that made OVS become de-facto standard technology for virtual switching in hypervisors. OVS is widely used in private cloud - Openstack, for example.
+
+<ul>
+    <li> Network state transition - OVS supports transition of ACL, QoS and L2/L3 forwarding tables between hypervisors when VM is migrated</li>
+    <li> Datapath implementation in kernel and user-space</li>
+    <li> CUPS (Control/User-plane separation) architecture - move packet processing to dedicated hardware (for example, Broadcom or Marvell chipsets) and manage it with OVS control-plane.</li>
+    <li> OpenFlow protocol support for remote flow control (hello, SDN).</li>
+</ul>
+OVS architecture can be confusing, but it is very logical and straightforward.
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/ovs_architecture_01.png" width="600">
 
-Для работы с OVS нужно понимать следующее:
+There are key OVS principles that should be understood before going deeper:
 <ul>
-<li> <b>Datapath</b> - тут обрабатываются пакеты. Аналогия - switch-fabric железного коммутатора. Datapath включает в себя приём пакетов, обработку заголовков, поиск соответствий по таблице flow, который в Datapath уже запрограммирован. Если OVS работает в kernel, то выполнен в виде модуля ядра. Если OVS работает в user-space, то это процесс в user-space Linux.</li>
-<li> <b>vswitchd</b> и <b>ovsdb</b> - демоны в user-space, то что реализует непосредственно сам функциональность коммутатора, хранит конфигурацию, устанавливает flow в datapath и программирует его.</li>
- <li> Набор инструментов для настройки и траблшутинга OVS - <b>ovs-vsctl, ovs-dpctl, ovs-ofctl, ovs-appctl</b>. Все то, что нужно, чтобы прописать в ovsdb конфигурацию портов, прописать какой flow куда должен коммутироваться, собрать статистику и прочее. Добрые люди <a href="https://therandomsecurityguy.com/openvswitch-cheat-sheet/" target="_blank">написали статью</a> по этому поводу.</li>
+<li> <b>Datapath</b> - packet processing part. Good analogy is a switch-fabric of physical switch. Datapath does headers processing of incoming packets and flow table search process. If OVS works in kernel mode, datapath works in kernel-space. If OVS works as user-space, datapath works as user-space process as well. </li>
+<li> <b>vswitchd</b> и <b>ovsdb</b> - key daemons in OVS. Thery implement switching function itself, store configuration and provision flow information into datapath. </li>
+ <li> Key instruments for OVS configuration and troubleshooting - <b>ovs-vsctl, ovs-dpctl, ovs-ofctl, ovs-appctl</b>. These tools are required to write ports configuration into ovsdb, add flow information, collect statistics and etc. There is a very <a href="https://therandomsecurityguy.com/openvswitch-cheat-sheet/" target="_blank">good article</a> with more details about OVS tools.</li>
 </ul>
 
-<b>Каким же образом сетевое устройство виртуальной машины оказывается в OVS?</b>
+<b>So, how exactly virtual NIC of VM appears in OVS?</b>
 
-Для решения данной задачи нам необходимо каким-то образом связать между собой виртуальный интерфейс, находящийся в user-space операционной системы с datapath OVS, находящимся в kernel.
+In order to solve this task, it is required to connect virtual interface (which lives in user-space) emulated by QEMU/KVM with OVS datapath (which lives in kernel-space).
 
-В операционной системе Linux передача пакетов между kernel и user-space-процессами осуществляется посредством двух специальных интерфейсов. Оба интерфейса использует запись/чтение пакета в/из специальный файл для передачи пакетов из user-space-процесса в kernel и обратно - file descriptor (FD) (это одна из причин низкой производительности виртуальной коммутации, если datapath OVS находится в kernel - каждый пакет требуется записать/прочесть через FD)
+Linux kernel supports packets exchange between kernel and user-space processes via two special interfaces. Both interfaces read/write packets to/from special file descriptor (FD) to create network communication between kernel and user-space process. (this is one of the reasons why virtual switching is slow when OVS runs in kernel mode - every packet should be read/written via FD).
 
 <ul>
-    <li><b>TUN</b> (tunnel) - устройство, работающее в L3 режиме и позволяющее записывать/считывать только IP пакеты в/из FD.</li>
-    <li> <b>TAP</b> (network tap) - то же самое, что и tun интерфейс + умеет производить операции с Ethernet-фреймами, т.е. работать в режиме L2.</li>
+    <li><b>TUN</b> (tunnel) - interface that works in L3 mode. It can read/write only IP packets via FD.</li>
+    <li> <b>TAP</b> (network tap) - same as tun interface + it can work with Ethernet frames, i.e. work in L2 mode.</li>
 </ul>
 
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/virtual-devices-all.png" width="800">
@@ -280,7 +280,7 @@ libvirt - это масштабный open-source проект, который �
 <a name="CONCLUSION"></a>
 <h1>Conclusion</h1>
 
-В данной статье мы рассмотрели минимальный набор теоретических знаний, который необходим для работы с виртуальными машинами. Я намеренно не приводил практических примеров и выводов команд, поскольку таких примеров можно найти сколько угодно в Сети, и я не ставил перед собой задачу написать "step-by-step guide". Если вас заинтересовала какая-то конкретная тема или технология, оставляйте свои комментарии и пишите вопросы.
+This article covers minimum theoritical knowledge needed to work with Virtual Machines. I intentionally did not mention practical examples or commands outputs because there are huge amount of examples and step-by-step guides available already.
 <hr>
 
 <a name="LINKS"></a>
