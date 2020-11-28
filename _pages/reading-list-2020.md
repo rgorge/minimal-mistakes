@@ -26,3 +26,10 @@ comments: true
 
 ## Non-fiction
 1. [God Delusion](https://www.amazon.com/The-God-Delusion-Richard-Dawkins-audiobook/dp/B000LP5E8M/ref=sr_1_1?crid=EO1LC8ZHY5A3&dchild=1&keywords=god+delusion&qid=1603386559&s=audible&sprefix=God+Delusion%2Caudible%2C259&sr=1-1)
+
+## Fiction
+1. [~~The Kindly Ones~~](https://www.goodreads.com/book/show/3755250-the-kindly-ones)
+2. [~~Three Ages of Okini-san~~](https://www.goodreads.com/book/show/3311932--?from_search=true&from_srp=true&qid=owtiYuZ1qT&rank=6)
+3. [~~Cruisers~~](https://www.goodreads.com/book/show/36615547?from_search=true&from_srp=true&qid=owtiYuZ1qT&rank=31)
+4. [~~Ocean Patrol~~](https://www.goodreads.com/book/show/28793897?from_search=true&from_srp=true&qid=owtiYuZ1qT&rank=41)
+5. [~~Have the Honor~~](https://www.goodreads.com/book/show/13640056?from_search=true&from_srp=true&qid=6lk7mqr95o&rank=1)

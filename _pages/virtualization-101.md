@@ -28,18 +28,18 @@ Virtualization is so deep and broad subject, that it is not possible to cover al
 <a name="INTRODUCTION"></a>
 <h1>Overview and brief history of virtualization technology</h1>
 
-The story of virtualization begins in 1999 when young company VMWare has released product VMWare Workstation. This was a first commercial product that provided virtualization for desktop/client applications. Virtualization of the server part started a little bit later in the form of ESX Server product that evolved in ESXi (i stands for integrated). This product is being used widely in IT and Telco private clouds as hypervisor for server side applications.
+The story of virtualization begins in 1999 when young company VMWare has released product VMWare Workstation. This was a first commercial product that provided virtualization for desktop/client applications. Virtualization of the server part started a little bit later in the form of ESX Server product that evolved in ESXi (i stands for integrated). This product is being used widely in IT and Telco private clouds as hypervisor for server-side applications.
 
 <cut/>
 
 On the Opensource side two main projects brought virtualization to Linux:
 <ul>
-    <li>KVM (Kernel-based Virtual Machine) - linux kernel module that allows kernel to work as hypervisor (i.e. creates infrastructure for launch and management of VMs). It was added in 2.6.20 kernel version back in 2007.</li>
+    <li>KVM (Kernel-based Virtual Machine) - linux kernel module that allows kernel to work as hypervisor (i.e., creates infrastructure for launch and management of VMs). It was added in 2.6.20 kernel version back in 2007.</li>
     <li>QEMU (Quick Emulator) - actual emulator of hardware for Virtual Machnine (CPU, Disk, RAM, anything else including USB port). QEMU is used in combination with KVM to achieve near baremetal performance for virtualized applications.</li>
 </ul>
 
 <blockquote>
-In reality all functionallity available in KVM has been ported to QEMU, but it is not important as far as most part of Linux users do not use QEMU/KVM directly but through at least one layer of abstraction that we will discuss later.
+In reality all functionality available in KVM has been ported to QEMU, but it is not important as far as most part of Linux users do not use QEMU/KVM directly but through at least one layer of abstraction that we will discuss later.
 </blockquote>
 
 As of today, VMWare ESXi and Linux QEMU/KVM are two most famous hypervisors on the on-premise virtualization market. They are representatives of the same hypervisor type, however, there are two of them:
@@ -56,11 +56,11 @@ Hardware vendors also needed to do their part of the job to provide acceptable l
 
 One of the most important and widely used technology is Intel VT (Virtualization Technology) - set of expansions developed by Intel for its x86 CPUs. They are used for efficient hypervisor work (sometimes VT is mandatory. For example, KVM will not work without VT-x and without it hypervisor will need to use only software virtualization without hardware acceleration).
 
-Two most famous of these expansions are VT-x и VT-d. First one is used for CPU performance improvements in virtualization environment because it provides hardware acceleration for some functions (with VT-x 99.9% of Guest OS functions are exectured in physical CPU and emulation is done only when it is required). Second one is needed for attaching physical devices to Virtual Machine (to use SRIOV VF VT-d <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/virtualization_host_configuration_and_guest_installation_guide/sect-virtualization_host_configuration_and_guest_installation_guide-sr_iov-how_sr_iov_libvirt_works">should be enabled</a> )
+Two most famous of these expansions are VT-x и VT-d. First one is used for CPU performance improvements in virtualization environment because it provides hardware acceleration for some functions (with VT-x 99.9% of Guest OS functions are executed in physical CPU and emulation is done only when it is required). Second one is needed for attaching physical devices to Virtual Machine (to use SRIOV VF VT-d <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/virtualization_host_configuration_and_guest_installation_guide/sect-virtualization_host_configuration_and_guest_installation_guide-sr_iov-how_sr_iov_libvirt_works">should be enabled</a> )
 
 Next important concept is difference between full-virtualization and para-virtualization.
 Full virtualization is good, it allows to run any code on any CPU, however, it is very not efficient and cannot be used for high-load systems.
-Para-virtualization, in short, it is when Guest OS is aware that it runs in virtualized environment and cooperates with hypervisor to achieve better performance. I.e. Guest OS - hypervisor interface appears.
+Para-virtualization, in short, it is when Guest OS is aware that it runs in virtualized environment and cooperates with hypervisor to achieve better performance. I.e., Guest OS - hypervisor interface appears.
 
 Overwhelming majority of operating systems support para-virtualization - in Linux kernel it is supported from version 2.6.20.
 
@@ -96,7 +96,7 @@ Thre are three most important virtual resources:
 
 
 <h2>CPU</h2>
-In theory, QEMU can emulate and CPU type with any flags and functionalities, but in practice either host-model (i.e. the model of physical CPU where hypervisor is running) is used and flags are required flags are enabled before propagating them into VM or named-model (i.e. some specific CPU model, like Intel Cascade Lake, for example) is used.
+In theory, QEMU can emulate and CPU type with any flags and functionalities, but in practice either host-model (i.e., the model of physical CPU where hypervisor is running) is used and flags are required flags are enabled before propagating them into VM or named-model (i.e., some specific CPU model, like Intel Cascade Lake, for example) is used.
 
 By default, QEMU will emulate CPU that Guest OS will recognize as QEMU Virtual CPU. It is not the most optimal CPU type for a VM, especially, when application running inside VM relies on specific CPU flags for better performance. <a href="https://wiki.qemu.org/Features/CPUModels" target="_blank">More information about CPU types in QEMU</a>.
 
@@ -109,19 +109,19 @@ The next in line is RAM. From Host OS perspective a VM launched with QEMU/KVM do
 
 <blockquote>
 Before we can continue discussion about RAM in VMs, it is required to mention term <b><a href="https://ru.wikipedia.org/wiki/Non-Uniform_Memory_Access" target="_blank">NUMA</a></b> - Non-Uniform Memory Access.
-Modern physical servers architecture uses two or more physical CPU (sockets) and associated RAM. This combination of CPU and RAM has a name "NUMA node". Communication between NUMA nodes happens via special bus - <b>QPI</b> (QuickPath Interconnect).
-There are local NUMA node - when a process running in operating system uses CPU and RAM inside single NUMA node and remote NUMA node - when a process uses CPU and RAM belonging to different NUMA nodes, i.e. for CPU-RAM communication QPI bus is being used.
+Modern physical servers' architecture uses two or more physical CPU (sockets) and associated RAM. This combination of CPU and RAM has a name "NUMA node". Communication between NUMA nodes happens via special bus - <b>QPI</b> (QuickPath Interconnect).
+There is local NUMA node - when a process running in operating system uses CPU and RAM inside single NUMA node and remote NUMA node - when a process uses CPU and RAM belonging to different NUMA nodes, i.e. for CPU-RAM communication QPI bus is being used.
 </blockquote>
 
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/numa.png" width="600">
 
 From VM point of view, RAM is allocated to it at the moment of Guest OS startup, however, in reality Host OS kernel allocates memory to QEMU/KVM process piece by piece as long as Guest OS requests additional RAM (there are exceptions in this process because it is possible to command QEMU/KVM allocates full memory at the moment of VM creation).
 
-RAM is being allocated not byte by byte but with chunks of specific size - <b>pages</b>. Page size is configurable and in theory can be anything, but in practice it is 4KB (default), 2MB and 1GB. Last two sizes have name <b>HugePages</b> and often being used for memory-intensive virtual machines. A major reason why the one should use Hugepages is <b>Translation Lookaside Buffer</b> (<b><a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer" target="_blank">TLB</a></b>) - search process that maps page virtual address with physical memory location. TLB process has its own limitations and stores information only about recently used pages. If there is no information about the page in TLB, than <b>TLB miss</b> occures and Host OS CPU should be involved to find physical memory cell that corresponds to the page.
+RAM is being allocated not byte by byte but with chunks of specific size - <b>pages</b>. Page size is configurable and in theory can be anything, but in practice it is 4KB (default), 2MB and 1GB. Last two sizes have name <b>HugePages</b> and often being used for memory-intensive virtual machines. A major reason why the one should use Hugepages is <b>Translation Lookaside Buffer</b> (<b><a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer" target="_blank">TLB</a></b>) - search process that maps page virtual address with physical memory location. TLB process has its own limitations and stores information only about recently used pages. If there is no information about the page in TLB, then <b>TLB miss</b> occurs and Host OS CPU should be involved to find physical memory cell that corresponds to the page.
 
 This process is slow and not efficient, that's why less pages with bigger size are used.
 
-QEMU/KVM also allows to emulate various NUMA topologies for Guest OS, allocate memory for a VM only from specific NUMA and etc. The most popular best practice is to allocate memoray for VM from local NUMA node. The reason behind it - avoid additional load on <b>QPI</b> bus that connects CPU sockets of physical server (this is applicable if your server has 2 amd more sockets). 
+QEMU/KVM also allows to emulate various NUMA topologies for Guest OS, allocate memory for a VM only from specific NUMA and etc. The most popular best practice is to allocate memory for VM from local NUMA node. The reason behind it - avoid additional load on <b>QPI</b> bus that connects CPU sockets of physical server (this is applicable if your server has 2 amd more sockets). 
 
 <hr>
 
@@ -131,12 +131,12 @@ Persistent storage is required for VM to preserve information if VM is rebooted 
 There are two main types of persistent storage:
 <ul>
     <li> Block storage - disk space that can be used for file system installation and partitioning. On the high level you can think about it as simple SSD or HDD disk.</li>
-    <li> Object storage - information is stored as file which is available via API. Typical examples of block storage sytems are AWS S3 or Dropbox.</li>
+    <li> Object storage - information is stored as file which is available via API. Typical examples of block storage systems are AWS S3 or Dropbox.</li>
 </ul>
 
-Vm needs <b>persistent storage</b>, but how you can achieve it if VM "lives" in memory of Host OS? In short, any call from Guest OS to virtual IDE controller intercepted by QEMU/KVM process and transformed into write operation to physiscal disk attached to Host OS. This method is not efficient from performance perspective, so virtio driver (as in virtual NIC) is used for para-virtualization of IDE or iSCSI devices. This is explained in details <a href="https://www.qemu.org/2018/02/09/understanding-qemu-devices/" target="_blank">here</a>. So, VM call its virtual disk via virtio driver, then QEMU/KVM makes sure that information is written to physical disk. The actual Host OS storage backend can be impelementd as CEPH, NFS or something else. 
+VM needs <b>persistent storage</b>, but how you can achieve it if VM "lives" in memory of Host OS? In short, any call from Guest OS to virtual IDE controller intercepted by QEMU/KVM process and transformed into write operation to physiscal disk attached to Host OS. This method is not efficient from performance perspective, so virtio driver (as in virtual NIC) is used for para-virtualization of IDE or iSCSI devices. This is explained in details <a href="https://www.qemu.org/2018/02/09/understanding-qemu-devices/" target="_blank">here</a>. So, VM call its virtual disk via virtio driver, then QEMU/KVM makes sure that information is written to physical disk. The actual Host OS storage backend can be impelemented as CEPH, NFS or something else. 
 
-The easiest way to emulate persistent storage is to use file in some directory on Host OS as disk space for VM. QEMU/KVM supports multiple formats of such files - raw, vdi, vmdk and etc. However, the most popular one is <b>qcow2</b> (QEMU copy-on-write version 2). In general, qcow2 is a file with defined structure without operating system. A lot of virtual machines are distributed as qcow2 images - VM system disk snapshots packaged in qcow2 format. This approach has number of advantages - qcow2 encoding requires less space than raw snapshot, QEMU/KVM can perform resize operation of qcow2 file, i.e. that it is possible to change VM system disk size, AES encryption is supported as well.
+The easiest way to emulate persistent storage is to use file in some directory on Host OS as disk space for VM. QEMU/KVM supports multiple formats of such files - raw, vdi, vmdk and etc. However, the most popular one is <b>qcow2</b> (QEMU copy-on-write version 2). In general, qcow2 is a file with defined structure without operating system. A lot of virtual machines are distributed as qcow2 images - VM system disk snapshots packaged in qcow2 format. This approach has number of advantages - qcow2 encoding requires less space than raw snapshot, QEMU/KVM can perform resize operation of qcow2 file, i.e., that it is possible to change VM system disk size, AES encryption is supported as well.
 
 When VM is launched, QEMU/KVM uses qcow2 file as system disk (I intentionally omit VM boot process here) and VM is able to perform read/write operations into qcow2 file via virtio driver. Snapshot creation process works in the same way - qcow2-file represents full copy of VM system disk and by used for backup purposes, evacuation to another hypervisor and etc.
 
@@ -145,7 +145,7 @@ By default, this qcow2 file will be detected in Guest OS as <i>/dev/vda</i> devi
 <hr>
 
 <h1>Network</h1>
-The last but not least there are virutal NIC cards and other I/O devices. Virtual Machine requies a <b>PCI/PCIe-bus</b> for i/O devices connection. QEMU/KVM can emulate different types of chipsets - q35 or i440fx (the first one supports - PCIe, the second - legacy PCI ) and multiple PCI topologies, for example, create separate PCI expander buses for NUMA nodes emulation for a Guest OS.
+The last but not least there are virtual NIC cards and other I/O devices. Virtual Machine requies a <b>PCI/PCIe-bus</b> for i/O devices connection. QEMU/KVM can emulate different types of chipsets - q35 or i440fx (the first one supports - PCIe, the second - legacy PCI) and multiple PCI topologies, for example, create separate PCI expander buses for NUMA nodes emulation for a Guest OS.
 
 After PCI/PCIe is created, I/O device should be connected to it. In general, it can be anything from network card to physical GPU. NIC can be fully-virtualized (for example, e1000 interface) or para-virtualized (for, example virtio) or a physical NIC. The last option is applicable for network-intensive applications where line rate PPS rate is required - routers, firewalls and etc.
 
@@ -154,7 +154,7 @@ There are two major approaches for this task - <b>PCI passthrough</b> and <b>SR-
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/sriov.png" width="600">
 
 <blockquote>
-It should be mentioned that PCI-PT and SRIOV are complimentary technologies. SRIOV creates Virtual Functions. This is done in Host OS layer and Host OS sees VF as one more PCI/PCIe device.
+It should be mentioned that PCI-PT and SRIOV are complementary technologies. SRIOV creates Virtual Functions. This is done in Host OS layer and Host OS sees VF as one more PCI/PCIe device.
 PCI-PT is a propagation mechanism of PCIe device into the VM. It doesnt matter what Guest OS will do with propagated device.
 </blockquote>
 
@@ -180,7 +180,7 @@ OVS architecture can be confusing, but it is very logical and straightforward.
 There are key OVS principles that should be understood before going deeper:
 <ul>
 <li> <b>Datapath</b> - packet processing part. Good analogy is a switch-fabric of physical switch. Datapath does headers processing of incoming packets and flow table search process. If OVS works in kernel mode, datapath works in kernel-space. If OVS works as user-space, datapath works as user-space process as well. </li>
-<li> <b>vswitchd</b> и <b>ovsdb</b> - key daemons in OVS. Thery implement switching function itself, store configuration and provision flow information into datapath. </li>
+<li> <b>vswitchd</b> и <b>ovsdb</b> - key daemons in OVS. They implement switching function itself, store configuration and provision flow information into datapath. </li>
  <li> Key instruments for OVS configuration and troubleshooting - <b>ovs-vsctl, ovs-dpctl, ovs-ofctl, ovs-appctl</b>. These tools are required to write ports configuration into ovsdb, add flow information, collect statistics and etc. There is a very <a href="https://therandomsecurityguy.com/openvswitch-cheat-sheet/" target="_blank">good article</a> with more details about OVS tools.</li>
 </ul>
 
@@ -192,32 +192,32 @@ Linux kernel supports packets exchange between kernel and user-space processes v
 
 <ul>
     <li><b>TUN</b> (tunnel) - interface that works in L3 mode. It can read/write only IP packets via FD.</li>
-    <li> <b>TAP</b> (network tap) - same as tun interface + it can work with Ethernet frames, i.e. work in L2 mode.</li>
+    <li> <b>TAP</b> (network tap) - same as tun interface + it can work with Ethernet frames, i.e., work in L2 mode.</li>
 </ul>
 
 <img src="https://fs.linkmeup.ru/images/adsm/1/1/virtual-devices-all.png" width="800">
 
-Именно поэтому при запущенной виртуальной машине в Host OS можно увидеть созданные TAP-интерфейсы командой <i>ip link</i> или <i>ifconfig</i> - это "ответная" часть virtio, которая "видна" в kernel Host OS. Также стоит обратить внимание, что TAP-интерфейс имеет тот же MAC-адрес что и virtio-интерфейс в виртуальной машине.
+This is the reason why in Host OS CLI commands <i>ip link</i> или <i>ifconfig</i> output you can see TAP interfaces - this is the second part of virtio that "lives" in Host OS kernel. It is also important to mention that TAP interface has the same MAC-address as vitio interface inside Virtual Machine.
 
-TAP-интерфейс может быть добавлен в OVS с помощью команд <i>ovs-vsctl</i> - тогда любой пакет, скоммутированный OVS в TAP-интерфейс, будет передан в виртуальную машину через file descriptor.
+TAP interface can be added into OVS with command <i>ovs-vsctl</i>. In this case any packet that switched by OVS to TAP interface will be send to VM via file descriptor write/read operation.
 
 <blockquote>
-    Реальный порядок действий при создании виртуальной машины может быть разным, т.е. сначала можно создать OVS bridge, потом указать виртуальной машине создать интерфейс, соединенный с этим OVS, а можно и наоборот.
+    The actual order of VM creation can vary, e.g. that first OVS and then VM interface will be created and attached to OVS or it can be be vice versa.
 </blockquote>
 
-Теперь, если нам необходимо получить возможность передачи пакетов между двумя и более виртуальными машинами, которые запущены на одном гипервизоре, нам потребуется лишь создать OVS bridge и добавить в него TAP-интерфейсы с помощью команд ovs-vsctl. Какие именно команды для этого нужны легко гуглится.
+Now it is we need to implement network connectivity between two or more VMs running on the same hypervisor. In order to do this, we need to create single instance of OVS bridge and add TAP interfaces into it with ovs-vsctl command. Exact syntaxis of the command is very easy to google.
 
-На гипервизоре может быть несколько OVS bridges, например, так работает Openstack Neutron, или же виртуальные машины могут находиться в разных namespace для реализации multi-tenancy.
+Hypervisor can have several OVS bridges for different purposes (this is for example is used for Openstack Neutron) or VMs can use multiple namespaces for multi-tenancy.
 
-<b>А если виртуальные машины находятся в разных OVS bridges?</b>
+<b>But what to do if VMs are connected to different OVS bridges?</b>
 
-Для решения данной задачи существует другой инструмент - <b>veth pair</b>. Veth pair может быть представлен как пара сетевых интерфейсов, соединенных кабелем - все то, что "влетает" в один интерфейс, "вылетает" из другого. Veth pair используется для соединения между собой нескольких OVS bridges или Linux bridges. Другой важный момент что части veth pair могут находиться в разных namespace Linux OS, то есть veth pair может быть также использован для связи namespace между собой на сетевом уровне.
+Another instrument is used for this task - <b>veth pair</b>. Veth pair can be visualized as a pair of network interfaces connected with cable. Everything that enters one interface, will exit from another side. Veth pair is used to connect several instances of OVS or Linux bridges. Another important feature is that different parts of veth pair can exist in different Linux namespaces, e.g. veth pair can connect namespaces on network layer.
 
 <a name="INSTRUMENTS"></a>
 <h1>Virtualization tools - libvirt, virsh and etc.</h1>
 
-В предыдущих главах мы рассматривали теоретические основы виртуализации, в этой главе мы поговорим об инструментах, которые доступны пользователю непосредственно для запуска и изменения виртуальных машин на KVM-гипервизоре.
-Остановимся на трех основных компонентах, которые покрывают 90 процентов всевозможных операций с виртуальными машинами:
+In previous chapter we discussed virtualization theory. In this chapter we will talk about key tools that can be used for virtual machine management on KVM hypervisor.
+There are 3 major tools that cover 90% of VMs lifecycle and troubleshooting operations: 
 
 <ul>
     <li> libvirt</li>
@@ -226,55 +226,51 @@ TAP-интерфейс может быть добавлен в OVS с помощ
 </ul>
 
 <blockquote>
-Конечно, существует множество других утилит и CLI-команд, которые позволяют управлять гипервизором, например, можно напрямую пользоваться командами qemu_system_x86_64 или графическим интерфейсом virt manager, но это скорее исключение. К тому же существующие сегодня Cloud-платформы, Openstack, например, используют как раз libvirt.
+Of course, there are other tools and CLI commands that allows to manage hypervisor. For example, you can use qemu_system_x86_64 CLI commands or virt manager user interface, but it is rare case. Many Private Cloud platforms, like Openstack, utilize libvirt.
 </blockquote>
 
 <h2>libvirt</h2>
-libvirt - это масштабный open-source проект, который занимается разработкой набора инструментов и драйверов для управления гипервизорами. Он поддерживает не только QEMU/KVM, но и ESXi, LXC и много чего еще.
-Основная причина его популярности - структурированный и понятный интерфейс взаимодействия через набор XML-файлов плюс возможность автоматизации через API. Стоит оговориться что libvirt не описывает все возможные функции гипервизора, он лишь предоставляет удобный интерфейс использования <b>полезных</b>, с точки зрения участников проекта, функции гипервизора.
+libvirt is a big open-source project that develops tools and drivers for hypervisor management. It supports not only QEMU/KVM but ESXi, LXC and other virtualization platforms.
+One of the key libvirt benefits - well-structured and human-readable format of XML files that define Virtual Machine parameters. It should be mentioned that libvirt does not describe all possible hypervisor features, but provides easy to use interface to <b>most important</b> features.
 
-И да, libvirt это де-факто стандарт в мире виртуализации сегодня. Только <a href="https://libvirt.org/apps.html" target="_blank"> взгляните на список приложений</a>, которые используют libvirt.
+So, libvirt is de-facto virtualization standard. Look on the <a href="https://libvirt.org/apps.html" target="_blank"> list</a> of supported applications!
 
 <img src="https://fs.linkmeup.ru/images/adsm/2/libvirt_support.png" width="700">
 
-Хорошая новость про libvirt - все нужные пакеты уже предустановлены во всех наиболее часто используемых Host OS - Ubuntu, CentOS и RHEL, поэтому, скорее всего, собирать руками нужные пакеты и компилировать libvirt вам не придется. В худшем случае придется воспользоваться соответствующим пакетным инсталлятором (apt, yum и им подобные).
-
-При первоначальной установке и запуске libvirt по умолчанию создает Linux bridge virbr0 и его минимальную конфигурацию.
+libvirt by default creates and configures Linux bridge virbr0 during installation process.
 
 <blockquote>
-    Именно поэтому при установке Ubuntu Server, например, вы увидите в выводе команды ifconfig Linux bridge virbr0 - это результат запуска демона libvirtd
+    This is the reason why after finishing installation of Ubuntu Server, for example, you will see Linux bridge virbr0 in the output of ip link command - it is created by libvirtd daemon.
 </blockquote>
 
-Этот Linux bridge не будет подключен ни к одному физическому интерфейсу, однако, может быть использован для связи виртуальных машин внутри одного гипервизора. Libvirt безусловно может быть использован вместе с OVS, однако, для этого пользователь должен самостоятельно создать OVS bridges с помощью соответствующих OVS-команд.
+This default Linux bridge will not be connected to any physical interface; however, it can be used for connectivity between VMs running on the same hypervisor. Libvirt, for sure, can be used together with OVS but OVS bridges should be created first with corresponding CLI commands.
 
-Любой виртуальный ресурс, необходимый для создания виртуальной машины (compute, network, storage) представлен в виде объекта в libvirt. За процесс описания и создания этих объектов отвечает набор различных XML-файлов.
+Any virtual resource required for VM creation (compute, network, storage) is a libvirt object. This object described in number of XML files.
 
-Детально описывать процесс создания виртуальных сетей и виртуальных хранилищ не имеет особого смысла, так как эта прикладная задача хорошо описана в документации libvirt:
+XML files structure and syntaxis explained very good in libvirt documentation, so we will omit it in this article.
 
 <ul>
     <li> <a href="https://wiki.libvirt.org/page/VirtualNetworking" target="_blank">Networking</a></li>
     <li> <a href="https://libvirt.org/storage.html" target="_blank">Storage</a></li>
 </ul>
 
-Сама виртуальная машина со всеми подключенными PCI-устройствами в терминологии libvirt называется domain. Это тоже <a href="https://libvirt.org/formatdomain.html" target="_blank"> объект внутри libvirt</a>, который описывается отдельным XML-файлом.
+Virtual Machine with connected PCI devices called domain in libvirt terminology. Domain is also <a href="https://libvirt.org/formatdomain.html" target="_blank"> libvirt object</a> and it is described as separate XML file.
 
-Этот XML-файл и является, строго говоря, виртуальной машиной со всеми виртуальными ресурсами - оперативная память, процессор, сетевые устройства, диски и прочее. Часто данный XML-файл называют libvirt XML или dump XML.
-Вряд ли найдется человек, который понимает все параметры libvirt XML, однако, это и не требуется, когда есть документация.
+This domain XML file is a VM with all virtual resource - memory, CPU, NICs, storage devices and etc. This XML file called libvirt XML or dump XML. I don't think that there is a person who knows all libvirt XML parameters but thanks to documentation it is unnecessary
 
-В общем случае, libvirt XML для Ubuntu Desktop Guest OS будет довольно прост - 40-50 строчек. Поскольку вся оптимизация производительности описывается также в libvirt XML (NUMA-топология, CPU-топологии, CPU pinning и прочее), для сетевых функций libvirt XML может быть очень сложен и содержать несколько сот строк. Любой производитель сетевых устройств, который поставляет свое ПО в виде виртуальных машин, имеет рекомендованные примеры libvirt XML.
+In general case, libvirt XML for Ubuntu Desktop Guest OS will be short - 40-50 lines. However, when it comes to creation of highly-optimized VMs with NUMA topology, CPU topology, CPU pinning and other features, libvirt XML can grow to several hundreds rows. Any vendor that supplies products as VMs have a recommended example of libvirt XMLs.
 
 <h2>virsh CLI</h2>
 
-Утилита virsh - "родная" командная строка для управления libvirt. Основное ее предназначение - это управление объектами libvirt, описанными в виде XML-файлов. Типичными примерами являются операции start, stop, define, destroy и так далее. То есть жизненный цикл объектов - life-cycle management.
+virsh tool is a native libvirt CLI. Its main purpose is to manage libvirt objects described by XML files. Typical examples are start, stop, define, destroy and other lifecycle management operations.
 
-Описание всех команд и флагов virsh также доступно в документации <a href="https://libvirt.org/sources/virshcmdref/html-single/" target="_blank">libvirt</a>.
-
+All commands and flags of virsh CLI explained in <a href="https://libvirt.org/sources/virshcmdref/html-single/" target="_blank">libvirt</a> documentation.
 
 <h2>virt-install</h2>
 
-Еще одна утилита, которая используется для взаимодействия с libvirt. Одно из основных преимуществ - можно не разбираться с XML-форматом, а обойтись лишь флагами, доступными в virsh-install. Второй важный момент - море примеров и информации в Сети.
+One more tool that is used together with libvirt. One of the key benefits - no need to deal with XML format and use only CLI flags available in virt-install plus huge amount of examples in Internet.
 
-Таким образом какой бы утилитой вы ни пользовались, управлять гипервизором в конечном счете будет именно libvirt, поэтому важно понимать архитектуру и принципы его работы.
+It doesnt matter what tool you will use, the actual hypervisor management will be done by libvirt.
 <hr>
 
 <a name="CONCLUSION"></a>
