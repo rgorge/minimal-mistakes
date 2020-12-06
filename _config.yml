@@ -16,11 +16,11 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Articles, ideas and braindump"
+title                    : "Technology, leadership and self-education in IT"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Roman Gorge"
-description              : "Articles, ideas and braindump"
+description              : "Technology, leadership and self-education in IT"
 url                      : "https://rgorge.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "rgorge/rgorge.github.io"
@@ -95,7 +95,7 @@ analytics:
 author:
   name             : "Roman Gorge"
   avatar           : "/assets/images/avatar.jpeg"
-  bio              : "Eat, sleep, work, repeat"
+  bio              : "Combining technical skills with business accumen"
   location         : "Sweden, Varberg"
   email            :
   links:
