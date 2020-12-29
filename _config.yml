@@ -16,11 +16,11 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Technology, leadership and self-education in IT"
+title                    : "Technology, leadership and self-education"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Roman Gorge"
-description              : "Technology, leadership and self-education in IT"
+description              : "Technology, leadership and self-education"
 url                      : "https://rgorge.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "rgorge/rgorge.github.io"
